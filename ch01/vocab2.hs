@@ -7,18 +7,20 @@ import System.Environment
 type Entry = (T.Text, Int)
 type Vocabulary = [Entry]
 
+-- it's pure, no IO
 extractVocab :: T.Text -> Vocabulary
 extractVocab t = map buildEntry $ group $ sort ws
   where
     ws = map T.toCaseFold $ filter (not . T.null) $ map cleanWord $ T.words t
-    buildEntry xs@(x:_) = (x, length xs)
-    buildEntry [] = error "unexpected"
+    buildEntry xs@(x:_) = (x, length xs) -- entire list is bound to the name xs
+    buildEntry [] = error "unexpected" -- cannot have 0 occurrences of a word
     cleanWord = T.dropAround (not . isLetter)
 
 printAllWords :: Vocabulary -> IO ()
 printAllWords vocab = do
   putStrLn "All words: "
   TIO.putStrLn $ T.unlines $ map fst vocab
+  -- T.unlines is like a join("\n")
 
 processTextFile :: FilePath -> IO ()
 processTextFile fname = do
@@ -31,4 +33,4 @@ main = do
   args <- getArgs
   case args of
     [fname] -> processTextFile fname
-    _ -> putStrLn "Usage: vocab2 filename"
+    _ -> putStrLn "Usage: vocab2 relative-file-path"
